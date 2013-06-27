@@ -43,7 +43,7 @@ tree.Insert([]byte("art trees"), []byte("are rad"))
 res := tree.Search([]byte("art trees"))
 
 // Inspect your result!
-fmt.Printf("%s\n", res.value) // "are rad"
+fmt.Printf("%s\n", res) // "are rad"
 ```
 
 # documentation
