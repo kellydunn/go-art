@@ -11,7 +11,7 @@
 
 an adaptive radix tree implementation in go
 ```
-[![Build Status](https://travis-ci.org/armon/libart.png)](https://travis-ci.org/kellydunn/go-art)
+[![Build Status](https://travis-ci.org/kellydunn/go-art.png)](https://travis-ci.org/kellydunn/go-art)
 # what
 
 An Adaptive Radix Tree is an indexing data structure similar to traditional radix trees, but uses internal nodes that grow and shrink intelligently with consecutive inserts and removals.
