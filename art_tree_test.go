@@ -3,12 +3,12 @@ package art
 import (
 	"bufio"
 	"bytes"
+	"encoding/binary"
 	_ "fmt"
 	_ "log"
+	"math/rand"
 	"os"
 	"testing"
-	"encoding/binary"
-	"math/rand"
 )
 
 // @spec: After a single insert operation, the tree should have a size of 1
@@ -714,8 +714,7 @@ func TestInsertWithSameByteSliceAddress(t *testing.T) {
 
 	// Keep track of what we inserted
 	keys := make(map[string]bool)
-	
-	
+
 	for i := 0; i < 135; i++ {
 		binary.BigEndian.PutUint64(key, uint64(rand.Int63()))
 		tree.Insert(key, key)
@@ -730,7 +729,7 @@ func TestInsertWithSameByteSliceAddress(t *testing.T) {
 
 	for k, _ := range keys {
 		n := tree.Search([]byte(k))
-		if !(n.(bool)) {
+		if n == nil{
 			t.Errorf("Did not find entry for key: %v\n", []byte(k))
 		}
 	}

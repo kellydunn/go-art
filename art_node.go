@@ -51,6 +51,18 @@ type ArtNode struct {
 	nodeType uint8
 }
 
+func NewLeafNode(key []byte, value interface{}) *ArtNode {
+	newKey := make([]byte, len(key))
+	copy(newKey, key)
+	l := &ArtNode{
+		key:      newKey,
+		value:    value,
+		nodeType: LEAF,
+	}
+
+	return l
+}
+
 // From the specification: The smallest node type can store up to 4 child
 // pointers and uses an array of length 4 for keys and another
 // array of the same length for pointers. The keys and pointers

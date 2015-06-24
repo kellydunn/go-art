@@ -82,7 +82,7 @@ func (t *ArtTree) insertHelper(current *ArtNode, currentRef **ArtNode, key []byt
 	//        simply be inserted into an existing inner node, after growing
 	//        it if necessary.
 	if current == nil {
-		*currentRef = &ArtNode{key: key, value: value, nodeType: LEAF}
+		*currentRef = NewLeafNode(key, value)
 		t.size += 1
 		return
 	}
@@ -100,7 +100,7 @@ func (t *ArtTree) insertHelper(current *ArtNode, currentRef **ArtNode, key []byt
 
 		// Create a new Inner Node to contain the new Leaf and the current node.
 		newNode4 := NewNode4()
-		newLeafNode := &ArtNode{key: key, value: value, nodeType: LEAF}
+		newLeafNode := NewLeafNode(key, value)
 
 		// Determine the longest common prefix between our current node and the key
 		limit := current.LongestCommonPrefix(newLeafNode, depth)
@@ -150,7 +150,7 @@ func (t *ArtTree) insertHelper(current *ArtNode, currentRef **ArtNode, key []byt
 			}
 
 			// Attach the desired insertion key
-			newLeafNode := &ArtNode{key: key, value: value, nodeType: LEAF}
+			newLeafNode := NewLeafNode(key, value)
 			newNode4.AddChild(key[depth+mismatch], newLeafNode)
 
 			t.size += 1
@@ -171,7 +171,7 @@ func (t *ArtTree) insertHelper(current *ArtNode, currentRef **ArtNode, key []byt
 
 	} else {
 		// Otherwise, Add the child at the current position.
-		current.AddChild(key[depth], &ArtNode{key: key, value: value, nodeType: LEAF})
+		current.AddChild(key[depth], NewLeafNode(key, value))
 		t.size += 1
 	}
 }
