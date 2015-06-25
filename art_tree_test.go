@@ -3,8 +3,10 @@ package art
 import (
 	"bufio"
 	"bytes"
+	"encoding/binary"
 	_ "fmt"
 	_ "log"
+	"math/rand"
 	"os"
 	"testing"
 )
@@ -701,5 +703,34 @@ func TestInsertManyUUIDsAndRemoveThemAll(t *testing.T) {
 
 	if tree.root != nil {
 		t.Error("Tree is expected to be nil after removing many uuids")
+	}
+}
+
+// Regression test for issue/2
+func TestInsertWithSameByteSliceAddress(t *testing.T) {
+	rand.Seed(42)
+	key := make([]byte, 8)
+	tree := NewArtTree()
+
+	// Keep track of what we inserted
+	keys := make(map[string]bool)
+
+	for i := 0; i < 135; i++ {
+		binary.BigEndian.PutUint64(key, uint64(rand.Int63()))
+		tree.Insert(key, key)
+
+		// Ensure that we can search these records later
+		keys[string(key)] = true
+	}
+
+	if tree.size != int64(len(keys)) {
+		t.Errorf("Mismatched size of tree and expected values.  Expected: %d.  Actual: %d\n", len(keys), tree.size)
+	}
+
+	for k, _ := range keys {
+		n := tree.Search([]byte(k))
+		if n == nil{
+			t.Errorf("Did not find entry for key: %v\n", []byte(k))
+		}
 	}
 }
