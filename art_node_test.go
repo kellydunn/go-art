@@ -215,9 +215,9 @@ func TestShrink(t *testing.T) {
 }
 
 func TestNewLeafNode(t *testing.T) {
-	key := []byte{'a', 'r', 't' }
+	key := []byte{'a', 'r', 't'}
 	value := "tree"
-	l := NewLeafNode(key, value)
+	l := NewLeafNode(key, key, value)
 
 	if &l.key == &key {
 		t.Errorf("Address of key byte slices should not match.")
@@ -225,6 +225,10 @@ func TestNewLeafNode(t *testing.T) {
 
 	if bytes.Compare(l.key, key) != 0 {
 		t.Errorf("Expected key value to match the one supplied")
+	}
+
+	if bytes.Compare(l.completeKey, key) != 0 {
+		t.Errorf("Expected completeKey value to match the one supplied")
 	}
 
 	if l.value != value {

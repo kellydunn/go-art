@@ -45,19 +45,21 @@ type ArtNode struct {
 	size      uint8
 
 	// Leaf Node Attributes
-	key      []byte
-	keySize  uint64
-	value    interface{}
-	nodeType uint8
+	key         []byte
+	keySize     uint64
+	completeKey []byte
+	value       interface{}
+	nodeType    uint8
 }
 
-func NewLeafNode(key []byte, value interface{}) *ArtNode {
+func NewLeafNode(key, completeKey []byte, value interface{}) *ArtNode {
 	newKey := make([]byte, len(key))
 	copy(newKey, key)
 	l := &ArtNode{
-		key:      newKey,
-		value:    value,
-		nodeType: LEAF,
+		key:         newKey,
+		completeKey: completeKey,
+		value:       value,
+		nodeType:    LEAF,
 	}
 
 	return l
@@ -645,6 +647,15 @@ func (n *ArtNode) copyMeta(other *ArtNode) {
 	n.size = other.size
 	n.prefix = other.prefix
 	n.prefixLen = other.prefixLen
+}
+
+// Key() returns the key used when the node was inserted
+func (n *ArtNode) Key() interface{} {
+	if n.nodeType != LEAF {
+		return nil
+	}
+
+	return n.completeKey
 }
 
 // Returns the value of the given node, or nil if it is not a leaf.
