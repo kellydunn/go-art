@@ -217,7 +217,7 @@ func TestShrink(t *testing.T) {
 func TestNewLeafNode(t *testing.T) {
 	key := []byte{'a', 'r', 't'}
 	value := "tree"
-	l := NewLeafNode(key, key, value)
+	l := NewLeafNode(key, value)
 
 	if &l.key == &key {
 		t.Errorf("Address of key byte slices should not match.")

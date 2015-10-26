@@ -52,12 +52,18 @@ type ArtNode struct {
 	nodeType    uint8
 }
 
-func NewLeafNode(key, completeKey []byte, value interface{}) *ArtNode {
+func NewLeafNode(key []byte, value interface{}) *ArtNode {
+	return newLeafNode(key, key, value)
+}
+
+func newLeafNode(key, completeKey []byte, value interface{}) *ArtNode {
 	newKey := make([]byte, len(key))
 	copy(newKey, key)
+	originalKey := make([]byte, len(completeKey))
+	copy(originalKey, completeKey)
 	l := &ArtNode{
 		key:         newKey,
-		completeKey: completeKey,
+		completeKey: originalKey,
 		value:       value,
 		nodeType:    LEAF,
 	}
