@@ -656,7 +656,7 @@ func (n *ArtNode) copyMeta(other *ArtNode) {
 }
 
 // Key() returns the key used when the node was inserted
-func (n *ArtNode) Key() []byte {
+func (n *ArtNode) Key() byte[] {
 	if n.nodeType != LEAF {
 		return nil
 	}
