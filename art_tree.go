@@ -3,6 +3,7 @@ package art
 
 import (
 	"bytes"
+	_ "fmt"
 	_ "math"
 	_ "os"
 )
@@ -27,7 +28,7 @@ func (t *ArtTree) Search(key []byte) interface{} {
 // Returns the node that contains the passed in key, or nil if not found.
 func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) interface{} {
 	// While we have nodes to search
-	for current != nil {
+	if current != nil {
 
 		// Check if the current is a match
 		if current.IsLeaf() {
@@ -49,8 +50,7 @@ func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) interfac
 		}
 
 		// Find the next node at the specified index, and update depth.
-		current = *(current.FindChild(key[depth]))
-		depth++
+		return t.searchHelper(*(current.FindChild(key[depth])), key, depth+1)
 	}
 
 	return nil
@@ -275,6 +275,59 @@ func (t *ArtTree) eachHelper(current *ArtNode, callback func(*ArtNode)) {
 			}
 		}
 	}
+}
+
+// Returns the node that contains the passed in key, or nil if not found.
+func (t *ArtTree) PrefixSearch(key []byte) []interface{} {
+	// key = ensureNullTerminatedKey(key)
+	foundStart := t.prefixHelper(t.root, key, 0)
+	// fmt.Println("foundStart", foundStart)
+	if foundStart != nil {
+		ret := make([]interface{}, 0)
+		t.eachHelper(foundStart, func(node *ArtNode) {
+			if node.IsLeaf() {
+				ret = append(ret, node.value)
+			}
+		})
+		return ret
+	}
+	return nil
+}
+
+// Recursive search helper function that traverses the tree.
+// Returns the node that contains the passed in key, or nil if not found.
+func (t *ArtTree) prefixHelper(current *ArtNode, key []byte, depth int) *ArtNode {
+	// While we have nodes to search
+	if current != nil {
+
+		// fmt.Println(string(current.keys), string(key))
+		// Check if the current is a match
+		if current.IsLeaf() {
+			if current.IsMatch(key) {
+				return current
+			}
+
+			// Bail if no match
+			return nil
+		}
+
+		// Check if our key mismatches the current compressed path
+		if current.PrefixMismatch(key, depth) != current.prefixLen {
+			// Bail if there's a mismatch during traversal.
+			return nil
+		} else {
+			// Otherwise, increase depth accordingly.
+			depth += current.prefixLen
+			if depth > len(key)-1 {
+				return current
+			}
+		}
+
+		// Find the next node at the specified index, and update depth.
+		return t.prefixHelper(*(current.FindChild(key[depth])), key, depth+1)
+	}
+
+	return nil
 }
 
 func memcpy(dest []byte, src []byte, numBytes int) {

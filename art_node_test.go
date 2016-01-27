@@ -215,7 +215,7 @@ func TestShrink(t *testing.T) {
 }
 
 func TestNewLeafNode(t *testing.T) {
-	key := []byte{'a', 'r', 't' }
+	key := []byte{'a', 'r', 't'}
 	value := "tree"
 	l := NewLeafNode(key, value)
 
