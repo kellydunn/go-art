@@ -18,22 +18,44 @@ func NewArtTree() *ArtTree {
 	return &ArtTree{root: nil, size: 0}
 }
 
+// Finds the starting node for a prefix search and returns an array of all the objects under it
+func (t *ArtTree) PrefixSearch(key []byte) []interface{} {
+	foundStart := t.searchHelper(t.root, key, 0)
+	if foundStart != nil {
+		ret := make([]interface{}, 0)
+		t.eachHelper(foundStart, func(node *ArtNode) {
+			if node.IsLeaf() {
+				ret = append(ret, node.value)
+			}
+		})
+		return ret
+	}
+	return nil
+}
+
 // Returns the node that contains the passed in key, or nil if not found.
 func (t *ArtTree) Search(key []byte) interface{} {
 	key = ensureNullTerminatedKey(key)
-	return t.searchHelper(t.root, key, 0)
+	foundNode := t.searchHelper(t.root, key, 0)
+	if foundNode != nil {
+		// i think with the null terminated key, the return is always a leaf, or nil?
+		// if foundNode.IsLeaf() {
+			return foundNode.value
+		// }
+	}
+	return nil
 }
 
 // Recursive search helper function that traverses the tree.
 // Returns the node that contains the passed in key, or nil if not found.
-func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) interface{} {
+func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) *ArtNode {
 	// While we have nodes to search
 	if current != nil {
 
 		// Check if the current is a match
 		if current.IsLeaf() {
 			if current.IsMatch(key) {
-				return current.value
+				return current
 			}
 
 			// Bail if no match
@@ -47,6 +69,9 @@ func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) interfac
 		} else {
 			// Otherwise, increase depth accordingly.
 			depth += current.prefixLen
+			if depth > len(key)-1 {
+				return current
+			}
 		}
 
 		// Find the next node at the specified index, and update depth.
@@ -275,59 +300,6 @@ func (t *ArtTree) eachHelper(current *ArtNode, callback func(*ArtNode)) {
 			}
 		}
 	}
-}
-
-// Returns the node that contains the passed in key, or nil if not found.
-func (t *ArtTree) PrefixSearch(key []byte) []interface{} {
-	// key = ensureNullTerminatedKey(key)
-	foundStart := t.prefixHelper(t.root, key, 0)
-	// fmt.Println("foundStart", foundStart)
-	if foundStart != nil {
-		ret := make([]interface{}, 0)
-		t.eachHelper(foundStart, func(node *ArtNode) {
-			if node.IsLeaf() {
-				ret = append(ret, node.value)
-			}
-		})
-		return ret
-	}
-	return nil
-}
-
-// Recursive search helper function that traverses the tree.
-// Returns the node that contains the passed in key, or nil if not found.
-func (t *ArtTree) prefixHelper(current *ArtNode, key []byte, depth int) *ArtNode {
-	// While we have nodes to search
-	if current != nil {
-
-		// fmt.Println(string(current.keys), string(key))
-		// Check if the current is a match
-		if current.IsLeaf() {
-			if current.IsMatch(key) {
-				return current
-			}
-
-			// Bail if no match
-			return nil
-		}
-
-		// Check if our key mismatches the current compressed path
-		if current.PrefixMismatch(key, depth) != current.prefixLen {
-			// Bail if there's a mismatch during traversal.
-			return nil
-		} else {
-			// Otherwise, increase depth accordingly.
-			depth += current.prefixLen
-			if depth > len(key)-1 {
-				return current
-			}
-		}
-
-		// Find the next node at the specified index, and update depth.
-		return t.prefixHelper(*(current.FindChild(key[depth])), key, depth+1)
-	}
-
-	return nil
 }
 
 func memcpy(dest []byte, src []byte, numBytes int) {
