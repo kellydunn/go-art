@@ -801,4 +801,16 @@ func TestPrefixSearch(t *testing.T) {
 		}
 	}
 
+	rr = tree.PrefixSearch([]byte("a"))
+	if rr == nil {
+		t.Error("something should have been found for a")
+	} else {
+		ss := ""
+		for _, s := range rr {
+			ss += s.(string) + ","
+		}
+		if ss != "abcd,abcfgh,abde,abef,abezyx,abfg,abgh," {
+			t.Error("array didn't match, got", ss)
+		}
+	}
 }
