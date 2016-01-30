@@ -753,26 +753,25 @@ func TestPrefixSearch(t *testing.T) {
 	}
 
 	rr := tree.PrefixSearch([]byte("x"))
-	if rr != nil {
+	if rr == nil {
+		t.Error("empty results empty arrays")
+	} else if len(rr) > 0 {
 		t.Error("shouldn't be found", rr)
 	}
 
 	rr = tree.PrefixSearch([]byte("ax"))
-	if rr != nil {
+	if rr == nil {
+		t.Error("empty results empty arrays")
+	} else if len(rr) > 0 {
 		t.Error("shouldn't be found", rr)
 	}
 
-	rr = tree.PrefixSearch([]byte("abc"))
-	if rr == nil {
-		t.Error("something should have been found for abc")
-	} else {
-		ss := ""
-		for _, s := range rr {
-			ss += s.(string) + ","
-		}
-		if ss != "abcd,abcfgh," {
-			t.Error("array didn't match, got", ss)
-		}
+	rs := ""
+	for res := range tree.PrefixSearchChan([]byte("abc")) {
+		rs += res.(string) + ","
+	}
+	if rs != "abcd,abcfgh," {
+		t.Error("array didn't match, got", rs)
 	}
 
 	rr = tree.PrefixSearch([]byte("ab"))
