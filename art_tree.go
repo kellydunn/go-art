@@ -3,10 +3,12 @@ package art
 
 import (
 	"bytes"
-	_ "fmt"
+	"fmt"
 	_ "math"
 	_ "os"
 )
+
+var _ = fmt.Println
 
 type ArtTree struct {
 	root *ArtNode
@@ -51,6 +53,7 @@ func (t *ArtTree) Search(key []byte) interface{} {
 func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) *ArtNode {
 	// While we have nodes to search
 	if current != nil {
+		maxKeyIndex := len(key)-1
 
 		// Check if the current is a match
 		if current.IsLeaf() {
@@ -60,6 +63,8 @@ func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) *ArtNode
 
 			// Bail if no match
 			return nil
+		} else if depth > maxKeyIndex {
+			return current
 		}
 
 		// Check if our key mismatches the current compressed path
@@ -69,7 +74,7 @@ func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) *ArtNode
 		} else {
 			// Otherwise, increase depth accordingly.
 			depth += current.prefixLen
-			if depth > len(key)-1 {
+			if depth > maxKeyIndex {
 				return current
 			}
 		}
