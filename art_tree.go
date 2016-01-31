@@ -3,9 +3,12 @@ package art
 
 import (
 	"bytes"
+	"fmt"
 	_ "math"
 	_ "os"
 )
+
+var _ = fmt.Println
 
 type ArtTree struct {
 	root *ArtNode
@@ -17,40 +20,68 @@ func NewArtTree() *ArtTree {
 	return &ArtTree{root: nil, size: 0}
 }
 
+// Finds the starting node for a prefix search and returns an array of all the objects under it
+func (t *ArtTree) PrefixSearch(key []byte) []interface{} {
+	foundStart := t.searchHelper(t.root, key, 0)
+	if foundStart != nil {
+		ret := make([]interface{}, 0)
+		t.eachHelper(foundStart, func(node *ArtNode) {
+			if node.IsLeaf() {
+				ret = append(ret, node.value)
+			}
+		})
+		return ret
+	}
+	return nil
+}
+
 // Returns the node that contains the passed in key, or nil if not found.
 func (t *ArtTree) Search(key []byte) interface{} {
 	key = ensureNullTerminatedKey(key)
-	return t.searchHelper(t.root, key, 0)
+	foundNode := t.searchHelper(t.root, key, 0)
+	if foundNode != nil {
+		// i think with the null terminated key, the return is always a leaf, or nil?
+		// if foundNode.IsLeaf() {
+			return foundNode.value
+		// }
+	}
+	return nil
 }
 
 // Recursive search helper function that traverses the tree.
 // Returns the node that contains the passed in key, or nil if not found.
-func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) interface{} {
+func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) *ArtNode {
 	// While we have nodes to search
-	for current != nil {
+	if current != nil {
+		maxKeyIndex := len(key)-1
 
 		// Check if the current is a match
 		if current.IsLeaf() {
 			if current.IsMatch(key) {
-				return current.value
+				return current
 			}
 
 			// Bail if no match
 			return nil
+		} else if depth > maxKeyIndex {
+			return current
 		}
 
 		// Check if our key mismatches the current compressed path
-		if current.PrefixMismatch(key, depth) != current.prefixLen {
+		prefixMismatch := current.PrefixMismatch(key, depth)
+		if prefixMismatch == 0 && prefixMismatch < current.prefixLen {
 			// Bail if there's a mismatch during traversal.
 			return nil
 		} else {
 			// Otherwise, increase depth accordingly.
 			depth += current.prefixLen
+			if depth > maxKeyIndex {
+				return current
+			}
 		}
 
 		// Find the next node at the specified index, and update depth.
-		current = *(current.FindChild(key[depth]))
-		depth++
+		return t.searchHelper(*(current.FindChild(key[depth])), key, depth+1)
 	}
 
 	return nil
