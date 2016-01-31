@@ -68,7 +68,8 @@ func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) *ArtNode
 		}
 
 		// Check if our key mismatches the current compressed path
-		if current.PrefixMismatch(key, depth) != current.prefixLen {
+		prefixMismatch := current.PrefixMismatch(key, depth)
+		if prefixMismatch == 0 && prefixMismatch < current.prefixLen {
 			// Bail if there's a mismatch during traversal.
 			return nil
 		} else {
