@@ -813,3 +813,27 @@ func TestPrefixSearch(t *testing.T) {
 		}
 	}
 }
+
+func TestPrefixSearch2(t *testing.T) {
+	tree := NewArtTree()
+
+	searchWords := []string{
+		"ab", "abc",
+	}
+
+	for _, s := range searchWords {
+		tree.Insert([]byte(s), s)
+	}
+	rr := tree.PrefixSearch([]byte("a"))
+	if rr == nil {
+		t.Error("something should have been found for abc")
+	} else {
+		ss := ""
+		for _, s := range rr {
+			ss += s.(string) + ","
+		}
+		if ss != "ab,abc," {
+			t.Error("array didn't match, got", ss)
+		}
+	}
+}
