@@ -20,29 +20,41 @@ func NewArtTree() *ArtTree {
 	return &ArtTree{root: nil, size: 0}
 }
 
+type Result struct {
+	Key string
+	Value interface{}
+}
+
+func (t *ArtTree) EachChanResult() chan Result {
+	return t.EachChanResultFrom(t.root)
+}
+
+func (t *ArtTree) EachChanResultFrom(start *ArtNode) chan Result {
+	outChan := make(chan Result)
+	go func() {
+		if start != nil {
+			for n := range t.EachChanFrom(start) {
+				if n.IsLeaf() {
+					outChan <- Result{string(n.key), n.value}
+				}
+			}
+		}
+		close(outChan)
+	}()
+	return outChan
+}
+
 // Finds the starting node for a prefix search and returns an array of all the objects under it
 func (t *ArtTree) PrefixSearch(key []byte) []interface{} {
 	ret := make([]interface{}, 0)
 	for r := range t.PrefixSearchChan(key) {
-		ret = append(ret, r)
+		ret = append(ret, r.Value)
 	}
 	return ret
 }
 
-func (t *ArtTree) PrefixSearchChan(key []byte) chan interface{} {
-	resultChan := make(chan interface{})
-	go func() {
-		foundStart := t.searchHelper(t.root, key, 0)
-		if foundStart != nil {
-			for node := range t.EachChan(foundStart) {
-				if node.IsLeaf() {
-					resultChan <- node.value
-				}
-			}
-		}
-		close(resultChan)
-	}()
-	return resultChan
+func (t *ArtTree) PrefixSearchChan(key []byte) chan Result {
+	return t.EachChanResultFrom(t.searchHelper(t.root, key, 0))
 }
 
 // Returns the node that contains the passed in key, or nil if not found.
@@ -273,12 +285,16 @@ func (t *ArtTree) removeHelper(current *ArtNode, currentRef **ArtNode, key []byt
 
 // Convenience method for EachPreorder
 func (t *ArtTree) Each(callback func(*ArtNode)) {
-	for n := range t.EachChan(t.root) {
+	for n := range t.EachChanFrom(t.root) {
 		callback(n)
 	}
 }
 
-func (t *ArtTree) EachChan(start *ArtNode) chan *ArtNode {
+func (t *ArtTree) EachChan() chan *ArtNode {
+	return t.EachChanFrom(t.root)
+}
+
+func (t *ArtTree) EachChanFrom(start *ArtNode) chan *ArtNode {
 	nodeChan := make(chan *ArtNode)
 	go func() {
 		t.eachHelper(start, nodeChan)
