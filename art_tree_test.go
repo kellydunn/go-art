@@ -741,7 +741,7 @@ func TestPrefixSearch(t *testing.T) {
 	searchWords := []string{
 		"abcd", "abde", "abfg", "abgh",
 		"abcfgh", "abezyx",
-		"bcdef", "bcdi", "bcdgh", "abef", 
+		"bcdef", "bcdi", "bcdgh", "abef",
 	}
 
 	for _, s := range searchWords {
