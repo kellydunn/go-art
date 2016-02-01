@@ -21,7 +21,7 @@ func NewArtTree() *ArtTree {
 }
 
 type Result struct {
-	Key string
+	Key   string
 	Value interface{}
 }
 
@@ -64,7 +64,7 @@ func (t *ArtTree) Search(key []byte) interface{} {
 	if foundNode != nil {
 		// i think with the null terminated key, the return is always a leaf, or nil?
 		// if foundNode.IsLeaf() {
-			return foundNode.value
+		return foundNode.value
 		// }
 	}
 	return nil
@@ -75,7 +75,7 @@ func (t *ArtTree) Search(key []byte) interface{} {
 func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) *ArtNode {
 	// While we have nodes to search
 	if current != nil {
-		maxKeyIndex := len(key)-1
+		maxKeyIndex := len(key) - 1
 
 		// Check if the current is a match
 		if current.IsLeaf() {
@@ -300,7 +300,7 @@ func (t *ArtTree) EachChanFrom(start *ArtNode) chan *ArtNode {
 		t.eachHelper(start, nodeChan)
 		close(nodeChan)
 	}()
-	return nodeChan	
+	return nodeChan
 }
 
 // Recursive helper for iterative over the ArtTree.  Iterates over all nodes in the tree,
