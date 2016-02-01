@@ -3,12 +3,9 @@ package art
 
 import (
 	"bytes"
-	"fmt"
 	_ "math"
 	_ "os"
 )
-
-var _ = fmt.Println
 
 type ArtTree struct {
 	root *ArtNode
@@ -62,10 +59,7 @@ func (t *ArtTree) Search(key []byte) interface{} {
 	key = ensureNullTerminatedKey(key)
 	foundNode := t.searchHelper(t.root, key, 0)
 	if foundNode != nil {
-		// i think with the null terminated key, the return is always a leaf, or nil?
-		// if foundNode.IsLeaf() {
 		return foundNode.value
-		// }
 	}
 	return nil
 }
