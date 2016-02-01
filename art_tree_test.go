@@ -768,7 +768,7 @@ func TestPrefixSearch(t *testing.T) {
 
 	rs := ""
 	for res := range tree.PrefixSearchChan([]byte("abc")) {
-		rs += res.(string) + ","
+		rs += res.Value.(string) + ","
 	}
 	if rs != "abcd,abcfgh," {
 		t.Error("array didn't match, got", rs)
