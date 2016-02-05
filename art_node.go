@@ -143,7 +143,7 @@ func (n *ArtNode) PrefixMismatch(key []byte, depth int) int {
 
 	} else {
 
-		for ; index < n.prefixLen; index++ {
+		for ; index < n.prefixLen && depth+index < len(key); index++ {
 			if key[depth+index] != n.prefix[index] {
 				return index
 			}

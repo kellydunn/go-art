@@ -729,8 +729,135 @@ func TestInsertWithSameByteSliceAddress(t *testing.T) {
 
 	for k, _ := range keys {
 		n := tree.Search([]byte(k))
-		if n == nil{
+		if n == nil {
 			t.Errorf("Did not find entry for key: %v\n", []byte(k))
+		}
+	}
+}
+
+func TestPrefixSearch(t *testing.T) {
+	tree := NewArtTree()
+
+	searchWords := []string{
+		"abcd", "abde", "abfg", "abgh",
+		"abcfgh", "abezyx",
+		"bcdef", "bcdi", "bcdgh", "abef",
+	}
+
+	for _, s := range searchWords {
+		tree.Insert([]byte(s), s)
+	}
+	res := tree.Search([]byte("abezyx"))
+	if res != "abezyx" {
+		t.Error("Unexpected search result.")
+	}
+
+	rr := tree.PrefixSearch([]byte("x"))
+	if rr == nil {
+		t.Error("empty results empty arrays")
+	} else if len(rr) > 0 {
+		t.Error("shouldn't be found", rr)
+	}
+
+	rr = tree.PrefixSearch([]byte("ax"))
+	if rr == nil {
+		t.Error("empty results empty arrays")
+	} else if len(rr) > 0 {
+		t.Error("shouldn't be found", rr)
+	}
+
+	rs := ""
+	for res := range tree.PrefixSearchChan([]byte("abc")) {
+		rs += res.Value.(string) + ","
+	}
+	if rs != "abcd,abcfgh," {
+		t.Error("array didn't match, got", rs)
+	}
+
+	rr = tree.PrefixSearch([]byte("ab"))
+	if rr == nil {
+		t.Error("something should have been found for abc")
+	} else {
+		ss := ""
+		for _, s := range rr {
+			ss += s.(string) + ","
+		}
+		if ss != "abcd,abcfgh,abde,abef,abezyx,abfg,abgh," {
+			t.Error("array didn't match, got", ss)
+		}
+	}
+
+	rr = tree.PrefixSearch([]byte("bcd"))
+	if rr == nil {
+		t.Error("something should have been found for abc")
+	} else {
+		ss := ""
+		for _, s := range rr {
+			ss += s.(string) + ","
+		}
+		if ss != "bcdef,bcdgh,bcdi," {
+			t.Error("array didn't match, got", ss)
+		}
+	}
+
+	rr = tree.PrefixSearch([]byte("a"))
+	if rr == nil {
+		t.Error("something should have been found for a")
+	} else {
+		ss := ""
+		for _, s := range rr {
+			ss += s.(string) + ","
+		}
+		if ss != "abcd,abcfgh,abde,abef,abezyx,abfg,abgh," {
+			t.Error("array didn't match, got", ss)
+		}
+	}
+}
+
+func TestPrefixSearch2(t *testing.T) {
+	tree := NewArtTree()
+
+	searchWords := []string{
+		"ab", "abc",
+	}
+
+	for _, s := range searchWords {
+		tree.Insert([]byte(s), s)
+	}
+	rr := tree.PrefixSearch([]byte("a"))
+	if rr == nil {
+		t.Error("something should have been found for abc")
+	} else {
+		ss := ""
+		for _, s := range rr {
+			ss += s.(string) + ","
+		}
+		if ss != "ab,abc," {
+			t.Error("array didn't match, got", ss)
+		}
+	}
+}
+
+func TestPrefixSearch3(t *testing.T) {
+	tree := NewArtTree()
+
+	searchWords := []string{
+		"foo:bar", "a", "foo:baz",
+	}
+
+	for _, s := range searchWords {
+		tree.Insert([]byte(s), s)
+	}
+	rr := tree.PrefixSearch([]byte("foo:b"))
+	if rr == nil {
+		t.Error("something should have been found for foo:b")
+	} else {
+		ss := ""
+		for _, s := range rr {
+			ss += s.(string) + ","
+		}
+		if ss != "foo:bar,foo:baz," {
+			t.Error("array didn't match, got", ss)
 		}
 	}
 }
