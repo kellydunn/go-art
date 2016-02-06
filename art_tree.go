@@ -81,15 +81,18 @@ func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) *ArtNode
 
 		// Check if our key mismatches the current compressed path
 		prefixMismatch := current.PrefixMismatch(key, depth)
-		if prefixMismatch == 0 && prefixMismatch < current.prefixLen {
-			// Bail if there's a mismatch during traversal.
-			return nil
-		} else {
-			// Otherwise, increase depth accordingly.
+		if prefixMismatch == current.prefixLen {
+			// whole prefix matches
 			depth += current.prefixLen
 			if depth > maxKeyIndex {
 				return current
 			}
+		} else if prefixMismatch == len(key)-depth {
+			// consumed whole key
+			return current
+		} else {
+			// mismatch
+			return nil
 		}
 
 		// Find the next node at the specified index, and update depth.
