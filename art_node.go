@@ -121,8 +121,11 @@ func (n *ArtNode) IsMatch(key []byte) bool {
 
 }
 
-// Returns the number of bytes that differ between the passed in key
-// and the compressed path of the current node at the specified depth.
+// Returns the relative index of the first byte that doesn't match
+// between key and the current node's prefix, starting at depth.
+// Ex: if the depth is 3 and the current prefix is 'baz',
+//     for key "foobar" the result is 2, for "foobaz", 3, and for
+//     "fooquux" 0.
 func (n *ArtNode) PrefixMismatch(key []byte, depth int) int {
 	index := 0
 
