@@ -58,7 +58,7 @@ func (t *ArtTree) PrefixSearchChan(key []byte) chan Result {
 func (t *ArtTree) Search(key []byte) interface{} {
 	key = ensureNullTerminatedKey(key)
 	foundNode := t.searchHelper(t.root, key, 0)
-	if foundNode != nil {
+	if foundNode != nil && foundNode.IsMatch(key) {
 		return foundNode.value
 	}
 	return nil
@@ -70,16 +70,12 @@ func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) *ArtNode
 	// While we have nodes to search
 	if current != nil {
 		maxKeyIndex := len(key) - 1
+		if depth > maxKeyIndex {
+			return current
+		}
 
-		// Check if the current is a match
-		if current.IsLeaf() {
-			if current.IsMatch(key) {
-				return current
-			}
-
-			// Bail if no match
-			return nil
-		} else if depth > maxKeyIndex {
+		// Check if the current is a match (including prefix match)
+		if current.IsLeaf() && len(current.key) >= len(key) && bytes.Equal(key, current.key[0:len(key)]) {
 			return current
 		}
 
