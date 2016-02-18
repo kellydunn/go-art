@@ -131,7 +131,7 @@ func (n *ArtNode) PrefixMismatch(key []byte, depth int) int {
 
 	if n.prefixLen > MAX_PREFIX_LEN {
 		for ; index < MAX_PREFIX_LEN; index++ {
-			if index+depth >= len(key) || key[depth+index] != n.prefix[index] {
+			if depth+index >= len(key) || key[depth+index] != n.prefix[index] {
 				return index
 			}
 		}
@@ -139,7 +139,7 @@ func (n *ArtNode) PrefixMismatch(key []byte, depth int) int {
 		minKey := n.Minimum().key
 
 		for ; index < n.prefixLen; index++ {
-			if key[depth+index] != minKey[depth+index] {
+			if depth+index >= len(key) || key[depth+index] != minKey[depth+index] {
 				return index
 			}
 		}
@@ -147,7 +147,7 @@ func (n *ArtNode) PrefixMismatch(key []byte, depth int) int {
 	} else {
 
 		for ; index < n.prefixLen; index++ {
-			if index+depth >= len(key) || key[depth+index] != n.prefix[index] {
+			if depth+index >= len(key) || key[depth+index] != n.prefix[index] {
 				return index
 			}
 		}
