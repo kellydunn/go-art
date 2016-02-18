@@ -128,28 +128,14 @@ func (n *ArtNode) IsMatch(key []byte) bool {
 //     "fooquux" 0.
 func (n *ArtNode) PrefixMismatch(key []byte, depth int) int {
 	index := 0
+	prefix := n.prefix
 
-	if n.prefixLen > MAX_PREFIX_LEN {
-		for ; index < MAX_PREFIX_LEN; index++ {
-			if depth+index >= len(key) || key[depth+index] != n.prefix[index] {
-				return index
-			}
-		}
-
-		minKey := n.Minimum().key
-
-		for ; index < n.prefixLen; index++ {
-			if depth+index >= len(key) || key[depth+index] != minKey[depth+index] {
-				return index
-			}
-		}
-
-	} else {
-
-		for ; index < n.prefixLen; index++ {
-			if depth+index >= len(key) || key[depth+index] != n.prefix[index] {
-				return index
-			}
+	for ; index < n.prefixLen && depth+index < len(key) && key[depth+index] == prefix[index]; index++ {
+		if index == MAX_PREFIX_LEN-1 {
+			// Once we get past MAX_PREFIX_LEN, the rest of the prefix isn't stored.
+			// So grab the first child of this node; the first n.prefixLen bytes of
+			// its key are the full prefix.
+			prefix = n.Minimum().key[depth:]
 		}
 	}
 
