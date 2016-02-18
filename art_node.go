@@ -131,7 +131,7 @@ func (n *ArtNode) PrefixMismatch(key []byte, depth int) int {
 
 	if n.prefixLen > MAX_PREFIX_LEN {
 		for ; index < MAX_PREFIX_LEN; index++ {
-			if key[depth+index] != n.prefix[index] {
+			if index+depth >= len(key) || key[depth+index] != n.prefix[index] {
 				return index
 			}
 		}
@@ -146,8 +146,8 @@ func (n *ArtNode) PrefixMismatch(key []byte, depth int) int {
 
 	} else {
 
-		for ; index < n.prefixLen && depth+index < len(key); index++ {
-			if key[depth+index] != n.prefix[index] {
+		for ; index < n.prefixLen; index++ {
+			if index+depth >= len(key) || key[depth+index] != n.prefix[index] {
 				return index
 			}
 		}
