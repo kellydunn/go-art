@@ -58,8 +58,9 @@ func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) interfac
 
 // Inserts the passed in value that is indexed by the passed in key into the ArtTree.
 func (t *ArtTree) Insert(key []byte, value interface{}) {
+	var completeKey = key;
 	key = ensureNullTerminatedKey(key)
-	t.insertHelper(t.root, &t.root, key, value, 0)
+	t.insertHelper(t.root, &t.root, key, completeKey, value, 0)
 }
 
 // Recursive helper function that traverses the tree until an insertion point is found.
@@ -77,12 +78,12 @@ func (t *ArtTree) Insert(key []byte, value interface{}) {
 //
 // If there is no child at the specified key at the current depth of traversal, a new leaf node
 // is created and inserted at this position.
-func (t *ArtTree) insertHelper(current *ArtNode, currentRef **ArtNode, key []byte, value interface{}, depth int) {
+func (t *ArtTree) insertHelper(current *ArtNode, currentRef **ArtNode, key, completeKey []byte, value interface{}, depth int) {
 	// @spec: Usually, the leaf can
 	//        simply be inserted into an existing inner node, after growing
 	//        it if necessary.
 	if current == nil {
-		*currentRef = NewLeafNode(key, value)
+		*currentRef = newLeafNode(key, completeKey, value)
 		t.size += 1
 		return
 	}
@@ -100,7 +101,7 @@ func (t *ArtTree) insertHelper(current *ArtNode, currentRef **ArtNode, key []byt
 
 		// Create a new Inner Node to contain the new Leaf and the current node.
 		newNode4 := NewNode4()
-		newLeafNode := NewLeafNode(key, value)
+		newLeafNode := newLeafNode(key, completeKey, value)
 
 		// Determine the longest common prefix between our current node and the key
 		limit := current.LongestCommonPrefix(newLeafNode, depth)
@@ -150,7 +151,7 @@ func (t *ArtTree) insertHelper(current *ArtNode, currentRef **ArtNode, key []byt
 			}
 
 			// Attach the desired insertion key
-			newLeafNode := NewLeafNode(key, value)
+			newLeafNode := newLeafNode(key, completeKey, value)
 			newNode4.AddChild(key[depth+mismatch], newLeafNode)
 
 			t.size += 1
@@ -167,11 +168,11 @@ func (t *ArtTree) insertHelper(current *ArtNode, currentRef **ArtNode, key []byt
 	if *next != nil {
 
 		// Recurse, and keep looking for an insertion point
-		t.insertHelper(*next, next, key, value, depth+1)
+		t.insertHelper(*next, next, key, completeKey, value, depth+1)
 
 	} else {
 		// Otherwise, Add the child at the current position.
-		current.AddChild(key[depth], NewLeafNode(key, value))
+		current.AddChild(key[depth], newLeafNode(key, completeKey, value))
 		t.size += 1
 	}
 }
