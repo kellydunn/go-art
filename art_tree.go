@@ -58,8 +58,9 @@ func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) interfac
 
 // Inserts the passed in value that is indexed by the passed in key into the ArtTree.
 func (t *ArtTree) Insert(key []byte, value interface{}) {
+	var completeKey = key;
 	key = ensureNullTerminatedKey(key)
-	t.insertHelper(t.root, &t.root, key, key, value, 0)
+	t.insertHelper(t.root, &t.root, key, completeKey, value, 0)
 }
 
 // Recursive helper function that traverses the tree until an insertion point is found.
