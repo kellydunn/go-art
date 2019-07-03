@@ -861,3 +861,90 @@ func TestPrefixSearch3(t *testing.T) {
 		}
 	}
 }
+
+func TestPrefixSearch4(t *testing.T) {
+	tree := NewArtTree()
+
+	searchWords := []string{
+		"a",
+	}
+
+	for _, s := range searchWords {
+		tree.Insert([]byte(s), s)
+	}
+	rr := tree.PrefixSearch([]byte(""))
+	if rr == nil {
+		t.Error("something should have been found for ''")
+	} else {
+		ss := ""
+		for _, s := range rr {
+			ss += s.(string) + ","
+		}
+		if ss != "a," {
+			t.Error("array didn't match, got", ss)
+		}
+	}
+	rr = tree.PrefixSearch([]byte("x"))
+	if rr == nil || len(rr) > 1 {
+		t.Error("Shouldn't have gotten results for x")
+
+	}
+}
+
+func TestPrefixSearch5(t *testing.T) {
+	tree := NewArtTree()
+
+	searchWords := []string{
+		"foot", "food",
+	}
+
+	for _, s := range searchWords {
+		tree.Insert([]byte(s), s)
+	}
+	rr := tree.PrefixSearch([]byte("for"))
+	if len(rr) > 0 {
+		t.Error("should get no results for for")
+	}
+
+	rr = tree.PrefixSearch([]byte("fo"))
+	if rr == nil {
+		t.Error("something should have been found for fo")
+	} else {
+		ss := ""
+		for _, s := range rr {
+			ss += s.(string) + ","
+		}
+		if ss != "food,foot," {
+			t.Error("array didn't match, got", ss)
+		}
+	}
+}
+
+func TestPrefixSearchWithLongCommonPrefix(t *testing.T) {
+	tree := NewArtTree()
+
+	searchWords := []string{
+		"full-name:abc", "full-name:abc1",
+	}
+
+	for _, s := range searchWords {
+		tree.Insert([]byte(s), s)
+	}
+	rr := tree.PrefixSearch([]byte("full-name:ax"))
+	if len(rr) > 0 {
+		t.Error("should get no results for for")
+	}
+
+	rr = tree.PrefixSearch([]byte("full-name:a"))
+	if rr == nil {
+		t.Error("something should have been found for fo")
+	} else {
+		ss := ""
+		for _, s := range rr {
+			ss += s.(string) + ","
+		}
+		if ss != "full-name:abc,full-name:abc1," {
+			t.Error("array didn't match, got", ss)
+		}
+	}
+}
