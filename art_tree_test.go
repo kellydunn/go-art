@@ -194,7 +194,7 @@ func TestInsertManyWordsAndEnsureSearchResultAndMinimumMaximum(t *testing.T) {
 			}
 
 			if bytes.Compare(res.([]byte), []byte(line)) != 0 {
-				t.Error("Incorrect value for node %v.", []byte(line))
+				t.Errorf("Incorrect value for node %v.", []byte(line))
 			}
 		}
 	}
@@ -250,7 +250,7 @@ func TestInsertManyUUIDsAndEnsureSearchAndMinimumMaximum(t *testing.T) {
 			}
 
 			if bytes.Compare(res.([]byte), []byte(line)) != 0 {
-				t.Error("Incorrect value for node %v.", []byte(line))
+				t.Errorf("Incorrect value for node %v.", []byte(line))
 			}
 		}
 	}
