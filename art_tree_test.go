@@ -155,7 +155,7 @@ func TestArtTreeInsert49AndRootShouldBeNode256(t *testing.T) {
 	}
 }
 
-// After inserting many words into the tree, we should be able to successfully retreive all of them
+// After inserting many words into the tree, we should be able to successfully retrieve all of them
 // To ensure their presence in the tree.
 func TestInsertManyWordsAndEnsureSearchResultAndMinimumMaximum(t *testing.T) {
 	tree := NewArtTree()
@@ -211,7 +211,7 @@ func TestInsertManyWordsAndEnsureSearchResultAndMinimumMaximum(t *testing.T) {
 	}
 }
 
-// After inserting many random UUIDs into the tree, we should be able to successfully retreive all of them
+// After inserting many random UUIDs into the tree, we should be able to successfully retrieve all of them
 // To ensure their presence in the tree.
 func TestInsertManyUUIDsAndEnsureSearchAndMinimumMaximum(t *testing.T) {
 	tree := NewArtTree()
@@ -504,7 +504,7 @@ func TestEachPreOrderness(t *testing.T) {
 
 	// Order should be Node4, 1, 2
 	if traversal[0] != tree.root || traversal[0].nodeType != NODE4 {
-		t.Error("Unexpected node at begining of traversal")
+		t.Error("Unexpected node at beginning of traversal")
 	}
 
 	if bytes.Compare(traversal[1].key, append([]byte("1"), 0)) != 0 || traversal[1].nodeType != LEAF {
@@ -519,7 +519,7 @@ func TestEachPreOrderness(t *testing.T) {
 // A traversal of a Node48 node should preserve order
 // And traverse in the same way for all other nodes.
 // Node48s do not store their children in order, and require different logic to traverse them
-// so we must test that logic seperately.
+// so we must test that logic separately.
 func TestEachNode48(t *testing.T) {
 	tree := NewArtTree()
 
@@ -535,7 +535,7 @@ func TestEachNode48(t *testing.T) {
 
 	// Order should be Node48, then the rest of the keys in sorted order
 	if traversal[0] != tree.root || traversal[0].nodeType != NODE48 {
-		t.Error("Unexpected node at begining of traversal")
+		t.Error("Unexpected node at beginning of traversal")
 	}
 
 	for i := 1; i < 48; i++ {
@@ -729,7 +729,7 @@ func TestInsertWithSameByteSliceAddress(t *testing.T) {
 
 	for k, _ := range keys {
 		n := tree.Search([]byte(k))
-		if n == nil{
+		if n == nil {
 			t.Errorf("Did not find entry for key: %v\n", []byte(k))
 		}
 	}

@@ -1,4 +1,4 @@
-// Pacakge art provides a golang implementation of Adaptive Radix Trees
+// Package art provides a golang implementation of Adaptive Radix Trees
 package art
 
 import (
@@ -187,7 +187,7 @@ func (t *ArtTree) Remove(key []byte) {
 //
 // If the current node is a leaf and matches the specified key, remove it.
 //
-// If the next child at the specifed key and depth matches,
+// If the next child at the specified key and depth matches,
 // the current node shall remove it accordingly.
 func (t *ArtTree) removeHelper(current *ArtNode, currentRef **ArtNode, key []byte, depth int) {
 	// Bail early if we are at a nil node.
@@ -230,7 +230,7 @@ func (t *ArtTree) removeHelper(current *ArtNode, currentRef **ArtNode, key []byt
 	}
 }
 
-// Convenience method for EachPreorder
+// Convenience method for EachPreorder.
 func (t *ArtTree) Each(callback func(*ArtNode)) {
 	t.eachHelper(t.root, callback)
 }

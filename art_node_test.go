@@ -37,7 +37,7 @@ func TestIsLeaf(t *testing.T) {
 	}
 }
 
-// A Leaf Node should be able to retreive its value
+// A Leaf Node should be able to retrieve its value
 func TestValue(t *testing.T) {
 	leaf := &ArtNode{nodeType: LEAF, value: "foo"}
 
@@ -61,7 +61,7 @@ func TestAddChildAndFindChildForAllNodeTypes(t *testing.T) {
 			n.AddChild(byte(i), newChild)
 		}
 
-		// Expect to find all children for that paticular type of node
+		// Expect to find all children for that particular type of node
 		for i := 0; i < n.MaxSize(); i++ {
 			x := *(n.FindChild(byte(i)))
 
@@ -215,7 +215,7 @@ func TestShrink(t *testing.T) {
 }
 
 func TestNewLeafNode(t *testing.T) {
-	key := []byte{'a', 'r', 't' }
+	key := []byte{'a', 'r', 't'}
 	value := "tree"
 	l := NewLeafNode(key, value)
 

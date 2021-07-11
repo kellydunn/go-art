@@ -1,4 +1,4 @@
-// Pacakge art provides a golang implementation of Adaptive Radix Trees
+// Package art provides a golang implementation of Adaptive Radix Trees
 package art
 
 import (
@@ -118,7 +118,6 @@ func (n *ArtNode) IsMatch(key []byte) bool {
 	}
 
 	return bytes.Compare(n.key, key) == 0
-
 }
 
 // Returns the number of bytes that differ between the passed in key
@@ -369,7 +368,7 @@ func (n *ArtNode) RemoveChild(key byte) {
 // ArtNodes of type NODE4 will grow to NODE16
 // ArtNodes of type NODE16 will grow to NODE48.
 // ArtNodes of type NODE48 will grow to NODE256.
-// ArtNodes of type NODE256 will not grow, as they are the biggest type of ArtNodes
+// ArtNodes of type NODE256 will not grow, as they are the biggest type of ArtNodes.
 func (n *ArtNode) grow() {
 	switch n.nodeType {
 	case NODE4:
