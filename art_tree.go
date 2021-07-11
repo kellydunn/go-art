@@ -23,6 +23,11 @@ func (t *ArtTree) Search(key []byte) interface{} {
 	return t.searchHelper(t.root, key, 0)
 }
 
+// Size returns the number of elements in the tree.
+func (t *ArtTree) Size() int64 {
+	return t.size
+}
+
 // Recursive search helper function that traverses the tree.
 // Returns the node that contains the passed in key, or nil if not found.
 func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) interface{} {

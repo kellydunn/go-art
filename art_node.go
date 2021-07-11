@@ -46,7 +46,6 @@ type ArtNode struct {
 
 	// Leaf Node Attributes
 	key      []byte
-	keySize  uint64
 	value    interface{}
 	nodeType uint8
 }

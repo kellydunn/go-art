@@ -194,7 +194,7 @@ func TestInsertManyWordsAndEnsureSearchResultAndMinimumMaximum(t *testing.T) {
 			}
 
 			if bytes.Compare(res.([]byte), []byte(line)) != 0 {
-				t.Error("Incorrect value for node %v.", []byte(line))
+				t.Errorf("Incorrect value for node %v.", []byte(line))
 			}
 		}
 	}
@@ -250,7 +250,7 @@ func TestInsertManyUUIDsAndEnsureSearchAndMinimumMaximum(t *testing.T) {
 			}
 
 			if bytes.Compare(res.([]byte), []byte(line)) != 0 {
-				t.Error("Incorrect value for node %v.", []byte(line))
+				t.Errorf("Incorrect value for node %v.", []byte(line))
 			}
 		}
 	}
@@ -727,10 +727,31 @@ func TestInsertWithSameByteSliceAddress(t *testing.T) {
 		t.Errorf("Mismatched size of tree and expected values.  Expected: %d.  Actual: %d\n", len(keys), tree.size)
 	}
 
-	for k, _ := range keys {
+	for k := range keys {
 		n := tree.Search([]byte(k))
-		if n == nil{
+		if n == nil {
 			t.Errorf("Did not find entry for key: %v\n", []byte(k))
+		}
+	}
+}
+
+func TestLen(t *testing.T) {
+	tests := []struct {
+		size int64
+	}{
+		{size: 0},
+		{size: 4},
+		{size: 10},
+	}
+
+	for _, test := range tests {
+		tree := NewArtTree()
+		for i := 0; i < int(test.size); i++ {
+			tree.Insert([]byte{byte(i)}, "data")
+		}
+		size := tree.Size()
+		if size != test.size {
+			t.Errorf("Mismatched size of tree and expected values.  Expected: %d.  Actual: %d\n", test.size, size)
 		}
 	}
 }
