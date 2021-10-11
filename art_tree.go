@@ -18,7 +18,7 @@ func NewArtTree() *ArtTree {
 }
 
 type Result struct {
-	Key   string
+	Key   []byte
 	Value interface{}
 }
 
@@ -32,7 +32,7 @@ func (t *ArtTree) EachChanResultFrom(start *ArtNode) chan Result {
 		if start != nil {
 			for n := range t.EachChanFrom(start) {
 				if n.IsLeaf() {
-					outChan <- Result{string(n.key), n.value}
+					outChan <- Result{n.key, n.value}
 				}
 			}
 		}
