@@ -17,40 +17,86 @@ func NewArtTree() *ArtTree {
 	return &ArtTree{root: nil, size: 0}
 }
 
+type Result struct {
+	Key   []byte
+	Value interface{}
+}
+
+func (t *ArtTree) EachChanResult() chan Result {
+	return t.EachChanResultFrom(t.root)
+}
+
+func (t *ArtTree) EachChanResultFrom(start *ArtNode) chan Result {
+	outChan := make(chan Result)
+	go func() {
+		if start != nil {
+			for n := range t.EachChanFrom(start) {
+				if n.IsLeaf() {
+					outChan <- Result{n.key, n.value}
+				}
+			}
+		}
+		close(outChan)
+	}()
+	return outChan
+}
+
+// Finds the starting node for a prefix search and returns an array of all the objects under it
+func (t *ArtTree) PrefixSearch(key []byte) []interface{} {
+	ret := make([]interface{}, 0)
+	for r := range t.PrefixSearchChan(key) {
+		ret = append(ret, r.Value)
+	}
+	return ret
+}
+
+func (t *ArtTree) PrefixSearchChan(key []byte) chan Result {
+	return t.EachChanResultFrom(t.searchHelper(t.root, key, 0))
+}
+
 // Returns the node that contains the passed in key, or nil if not found.
 func (t *ArtTree) Search(key []byte) interface{} {
 	key = ensureNullTerminatedKey(key)
-	return t.searchHelper(t.root, key, 0)
+	foundNode := t.searchHelper(t.root, key, 0)
+	if foundNode != nil && foundNode.IsMatch(key) {
+		return foundNode.value
+	}
+	return nil
 }
 
 // Recursive search helper function that traverses the tree.
 // Returns the node that contains the passed in key, or nil if not found.
-func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) interface{} {
+func (t *ArtTree) searchHelper(current *ArtNode, key []byte, depth int) *ArtNode {
 	// While we have nodes to search
-	for current != nil {
+	if current != nil {
+		maxKeyIndex := len(key) - 1
+		if depth > maxKeyIndex {
+			return current
+		}
 
-		// Check if the current is a match
-		if current.IsLeaf() {
-			if current.IsMatch(key) {
-				return current.value
-			}
-
-			// Bail if no match
-			return nil
+		// Check if the current is a match (including prefix match)
+		if current.IsLeaf() && len(current.key) >= len(key) && bytes.Equal(key, current.key[0:len(key)]) {
+			return current
 		}
 
 		// Check if our key mismatches the current compressed path
-		if current.PrefixMismatch(key, depth) != current.prefixLen {
-			// Bail if there's a mismatch during traversal.
-			return nil
-		} else {
-			// Otherwise, increase depth accordingly.
+		prefixMismatch := current.PrefixMismatch(key, depth)
+		if prefixMismatch == current.prefixLen {
+			// whole prefix matches
 			depth += current.prefixLen
+			if depth > maxKeyIndex {
+				return current
+			}
+		} else if prefixMismatch == len(key)-depth {
+			// consumed whole key
+			return current
+		} else {
+			// mismatch
+			return nil
 		}
 
 		// Find the next node at the specified index, and update depth.
-		current = *(current.FindChild(key[depth]))
-		depth++
+		return t.searchHelper(*(current.FindChild(key[depth])), key, depth+1)
 	}
 
 	return nil
@@ -232,19 +278,33 @@ func (t *ArtTree) removeHelper(current *ArtNode, currentRef **ArtNode, key []byt
 
 // Convenience method for EachPreorder
 func (t *ArtTree) Each(callback func(*ArtNode)) {
-	t.eachHelper(t.root, callback)
+	for n := range t.EachChanFrom(t.root) {
+		callback(n)
+	}
+}
+
+func (t *ArtTree) EachChan() chan *ArtNode {
+	return t.EachChanFrom(t.root)
+}
+
+func (t *ArtTree) EachChanFrom(start *ArtNode) chan *ArtNode {
+	nodeChan := make(chan *ArtNode)
+	go func() {
+		t.eachHelper(start, nodeChan)
+		close(nodeChan)
+	}()
+	return nodeChan
 }
 
 // Recursive helper for iterative over the ArtTree.  Iterates over all nodes in the tree,
-// executing the passed in callback as specified by the passed in traversal type.
-func (t *ArtTree) eachHelper(current *ArtNode, callback func(*ArtNode)) {
+// putting the found nodes on the channel
+func (t *ArtTree) eachHelper(current *ArtNode, dest chan *ArtNode) {
 	// Bail early if there's no node to iterate over
 	if current == nil {
 		return
 	}
 
-	callback(current)
-
+	dest <- current
 	// Art Nodes of type NODE48 do not necessarily store their children in sorted order.
 	// So we must instead iterate over their keys, acccess the children, and iterate properly.
 	if current.nodeType == NODE48 {
@@ -256,7 +316,7 @@ func (t *ArtTree) eachHelper(current *ArtNode, callback func(*ArtNode)) {
 				if next != nil {
 
 					// Recurse
-					t.eachHelper(next, callback)
+					t.eachHelper(next, dest)
 				}
 			}
 		}
@@ -271,7 +331,7 @@ func (t *ArtTree) eachHelper(current *ArtNode, callback func(*ArtNode)) {
 			if next != nil {
 
 				// Recurse
-				t.eachHelper(next, callback)
+				t.eachHelper(next, dest)
 			}
 		}
 	}

@@ -173,7 +173,7 @@ func TestInsertManyWordsAndEnsureSearchResultAndMinimumMaximum(t *testing.T) {
 		if line, err := reader.ReadBytes('\n'); err != nil {
 			break
 		} else {
-			tree.Insert([]byte(line), []byte(line))
+			tree.Insert(line, line)
 		}
 	}
 
@@ -183,7 +183,7 @@ func TestInsertManyWordsAndEnsureSearchResultAndMinimumMaximum(t *testing.T) {
 		if line, err := reader.ReadBytes(byte('\n')); err != nil {
 			break
 		} else {
-			res := tree.Search([]byte(line))
+			res := tree.Search(line)
 
 			if res == nil {
 				t.Error("Unexpected nil value for search result")
@@ -193,8 +193,8 @@ func TestInsertManyWordsAndEnsureSearchResultAndMinimumMaximum(t *testing.T) {
 				t.Error("Expected payload for element in tree")
 			}
 
-			if bytes.Compare(res.([]byte), []byte(line)) != 0 {
-				t.Error("Incorrect value for node %v.", []byte(line))
+			if bytes.Compare(res.([]byte), line) != 0 {
+				t.Errorf("Incorrect value for node %v.", line)
 			}
 		}
 	}
@@ -229,7 +229,7 @@ func TestInsertManyUUIDsAndEnsureSearchAndMinimumMaximum(t *testing.T) {
 		if line, err := reader.ReadBytes('\n'); err != nil {
 			break
 		} else {
-			tree.Insert([]byte(line), []byte(line))
+			tree.Insert(line, line)
 		}
 	}
 
@@ -239,7 +239,7 @@ func TestInsertManyUUIDsAndEnsureSearchAndMinimumMaximum(t *testing.T) {
 		if line, err := reader.ReadBytes(byte('\n')); err != nil {
 			break
 		} else {
-			res := tree.Search([]byte(line))
+			res := tree.Search(line)
 
 			if res == nil {
 				t.Error("Unexpected nil value for search result")
@@ -249,8 +249,8 @@ func TestInsertManyUUIDsAndEnsureSearchAndMinimumMaximum(t *testing.T) {
 				t.Error("Expected payload for element in tree")
 			}
 
-			if bytes.Compare(res.([]byte), []byte(line)) != 0 {
-				t.Error("Incorrect value for node %v.", []byte(line))
+			if bytes.Compare(res.([]byte), line) != 0 {
+				t.Errorf("Incorrect value for node %v.", line)
 			}
 		}
 	}
@@ -496,7 +496,7 @@ func TestEachPreOrderness(t *testing.T) {
 	tree.Insert([]byte("1"), []byte("1"))
 	tree.Insert([]byte("2"), []byte("2"))
 
-	traversal := []*ArtNode{}
+	var traversal []*ArtNode
 
 	tree.Each(func(node *ArtNode) {
 		traversal = append(traversal, node)
@@ -527,7 +527,7 @@ func TestEachNode48(t *testing.T) {
 		tree.Insert([]byte{byte(i)}, []byte{byte(i)})
 	}
 
-	traversal := []*ArtNode{}
+	var traversal []*ArtNode
 
 	tree.Each(func(node *ArtNode) {
 		traversal = append(traversal, node)
@@ -563,7 +563,7 @@ func TestEachFullIterationExpectCountOfAllTypes(t *testing.T) {
 		if line, err := reader.ReadBytes('\n'); err != nil {
 			break
 		} else {
-			tree.Insert([]byte(line), []byte(line))
+			tree.Insert(line, line)
 		}
 	}
 
@@ -628,7 +628,7 @@ func TestInsertManyWordsAndRemoveThemAll(t *testing.T) {
 		if line, err := reader.ReadBytes('\n'); err != nil {
 			break
 		} else {
-			tree.Insert([]byte(line), []byte(line))
+			tree.Insert(line, line)
 		}
 	}
 
@@ -640,9 +640,9 @@ func TestInsertManyWordsAndRemoveThemAll(t *testing.T) {
 		if line, err := reader.ReadBytes('\n'); err != nil {
 			break
 		} else {
-			tree.Remove([]byte(line))
+			tree.Remove(line)
 
-			dblCheck := tree.Search([]byte(line))
+			dblCheck := tree.Search(line)
 			if dblCheck != nil {
 				numFound += 1
 			}
@@ -676,7 +676,7 @@ func TestInsertManyUUIDsAndRemoveThemAll(t *testing.T) {
 		if line, err := reader.ReadBytes('\n'); err != nil {
 			break
 		} else {
-			tree.Insert([]byte(line), []byte(line))
+			tree.Insert(line, line)
 		}
 	}
 
@@ -688,9 +688,9 @@ func TestInsertManyUUIDsAndRemoveThemAll(t *testing.T) {
 		if line, err := reader.ReadBytes('\n'); err != nil {
 			break
 		} else {
-			tree.Remove([]byte(line))
+			tree.Remove(line)
 
-			dblCheck := tree.Search([]byte(line))
+			dblCheck := tree.Search(line)
 			if dblCheck != nil {
 				numFound += 1
 			}
@@ -727,10 +727,224 @@ func TestInsertWithSameByteSliceAddress(t *testing.T) {
 		t.Errorf("Mismatched size of tree and expected values.  Expected: %d.  Actual: %d\n", len(keys), tree.size)
 	}
 
-	for k, _ := range keys {
+	for k := range keys {
 		n := tree.Search([]byte(k))
-		if n == nil{
+		if n == nil {
 			t.Errorf("Did not find entry for key: %v\n", []byte(k))
+		}
+	}
+}
+
+func TestPrefixSearch(t *testing.T) {
+	tree := NewArtTree()
+
+	searchWords := []string{
+		"abcd", "abde", "abfg", "abgh",
+		"abcfgh", "abezyx",
+		"bcdef", "bcdi", "bcdgh", "abef",
+	}
+
+	for _, s := range searchWords {
+		tree.Insert([]byte(s), s)
+	}
+	res := tree.Search([]byte("abezyx"))
+	if res != "abezyx" {
+		t.Error("Unexpected search result.")
+	}
+
+	rr := tree.PrefixSearch([]byte("x"))
+	if rr == nil {
+		t.Error("empty results empty arrays")
+	} else if len(rr) > 0 {
+		t.Error("shouldn't be found", rr)
+	}
+
+	rr = tree.PrefixSearch([]byte("ax"))
+	if rr == nil {
+		t.Error("empty results empty arrays")
+	} else if len(rr) > 0 {
+		t.Error("shouldn't be found", rr)
+	}
+
+	rs := ""
+	for res := range tree.PrefixSearchChan([]byte("abc")) {
+		rs += res.Value.(string) + ","
+	}
+	if rs != "abcd,abcfgh," {
+		t.Error("array didn't match, got", rs)
+	}
+
+	rr = tree.PrefixSearch([]byte("ab"))
+	if rr == nil {
+		t.Error("something should have been found for abc")
+	} else {
+		ss := ""
+		for _, s := range rr {
+			ss += s.(string) + ","
+		}
+		if ss != "abcd,abcfgh,abde,abef,abezyx,abfg,abgh," {
+			t.Error("array didn't match, got", ss)
+		}
+	}
+
+	rr = tree.PrefixSearch([]byte("bcd"))
+	if rr == nil {
+		t.Error("something should have been found for abc")
+	} else {
+		ss := ""
+		for _, s := range rr {
+			ss += s.(string) + ","
+		}
+		if ss != "bcdef,bcdgh,bcdi," {
+			t.Error("array didn't match, got", ss)
+		}
+	}
+
+	rr = tree.PrefixSearch([]byte("a"))
+	if rr == nil {
+		t.Error("something should have been found for a")
+	} else {
+		ss := ""
+		for _, s := range rr {
+			ss += s.(string) + ","
+		}
+		if ss != "abcd,abcfgh,abde,abef,abezyx,abfg,abgh," {
+			t.Error("array didn't match, got", ss)
+		}
+	}
+}
+
+func TestPrefixSearch2(t *testing.T) {
+	tree := NewArtTree()
+
+	searchWords := []string{
+		"ab", "abc",
+	}
+
+	for _, s := range searchWords {
+		tree.Insert([]byte(s), s)
+	}
+	rr := tree.PrefixSearch([]byte("a"))
+	if rr == nil {
+		t.Error("something should have been found for abc")
+	} else {
+		ss := ""
+		for _, s := range rr {
+			ss += s.(string) + ","
+		}
+		if ss != "ab,abc," {
+			t.Error("array didn't match, got", ss)
+		}
+	}
+}
+
+func TestPrefixSearch3(t *testing.T) {
+	tree := NewArtTree()
+
+	searchWords := []string{
+		"foo:bar", "a", "foo:baz",
+	}
+
+	for _, s := range searchWords {
+		tree.Insert([]byte(s), s)
+	}
+	rr := tree.PrefixSearch([]byte("foo:b"))
+	if rr == nil {
+		t.Error("something should have been found for foo:b")
+	} else {
+		ss := ""
+		for _, s := range rr {
+			ss += s.(string) + ","
+		}
+		if ss != "foo:bar,foo:baz," {
+			t.Error("array didn't match, got", ss)
+		}
+	}
+}
+
+func TestPrefixSearch4(t *testing.T) {
+	tree := NewArtTree()
+
+	searchWords := []string{
+		"a",
+	}
+
+	for _, s := range searchWords {
+		tree.Insert([]byte(s), s)
+	}
+	rr := tree.PrefixSearch([]byte(""))
+	if rr == nil {
+		t.Error("something should have been found for ''")
+	} else {
+		ss := ""
+		for _, s := range rr {
+			ss += s.(string) + ","
+		}
+		if ss != "a," {
+			t.Error("array didn't match, got", ss)
+		}
+	}
+	rr = tree.PrefixSearch([]byte("x"))
+	if rr == nil || len(rr) > 1 {
+		t.Error("Shouldn't have gotten results for x")
+
+	}
+}
+
+func TestPrefixSearch5(t *testing.T) {
+	tree := NewArtTree()
+
+	searchWords := []string{
+		"foot", "food",
+	}
+
+	for _, s := range searchWords {
+		tree.Insert([]byte(s), s)
+	}
+	rr := tree.PrefixSearch([]byte("for"))
+	if len(rr) > 0 {
+		t.Error("should get no results for for")
+	}
+
+	rr = tree.PrefixSearch([]byte("fo"))
+	if rr == nil {
+		t.Error("something should have been found for fo")
+	} else {
+		ss := ""
+		for _, s := range rr {
+			ss += s.(string) + ","
+		}
+		if ss != "food,foot," {
+			t.Error("array didn't match, got", ss)
+		}
+	}
+}
+
+func TestPrefixSearchWithLongCommonPrefix(t *testing.T) {
+	tree := NewArtTree()
+
+	searchWords := []string{
+		"full-name:abc", "full-name:abc1",
+	}
+
+	for _, s := range searchWords {
+		tree.Insert([]byte(s), s)
+	}
+	rr := tree.PrefixSearch([]byte("full-name:ax"))
+	if len(rr) > 0 {
+		t.Error("should get no results for for")
+	}
+
+	rr = tree.PrefixSearch([]byte("full-name:a"))
+	if rr == nil {
+		t.Error("something should have been found for fo")
+	} else {
+		ss := ""
+		for _, s := range rr {
+			ss += s.(string) + ","
+		}
+		if ss != "full-name:abc,full-name:abc1," {
+			t.Error("array didn't match, got", ss)
 		}
 	}
 }

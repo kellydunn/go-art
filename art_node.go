@@ -121,32 +121,21 @@ func (n *ArtNode) IsMatch(key []byte) bool {
 
 }
 
-// Returns the number of bytes that differ between the passed in key
-// and the compressed path of the current node at the specified depth.
+// Returns the relative index of the first byte that doesn't match
+// between key and the current node's prefix, starting at depth.
+// Ex: if the depth is 3 and the current prefix is 'baz',
+//     for key "foobar" the result is 2, for "foobaz", 3, and for
+//     "fooquux" 0.
 func (n *ArtNode) PrefixMismatch(key []byte, depth int) int {
 	index := 0
+	prefix := n.prefix
 
-	if n.prefixLen > MAX_PREFIX_LEN {
-		for ; index < MAX_PREFIX_LEN; index++ {
-			if key[depth+index] != n.prefix[index] {
-				return index
-			}
-		}
-
-		minKey := n.Minimum().key
-
-		for ; index < n.prefixLen; index++ {
-			if key[depth+index] != minKey[depth+index] {
-				return index
-			}
-		}
-
-	} else {
-
-		for ; index < n.prefixLen; index++ {
-			if key[depth+index] != n.prefix[index] {
-				return index
-			}
+	for ; index < n.prefixLen && depth+index < len(key) && key[depth+index] == prefix[index]; index++ {
+		if index == MAX_PREFIX_LEN-1 {
+			// Once we get past MAX_PREFIX_LEN, the rest of the prefix isn't stored.
+			// So grab the first child of this node; the first n.prefixLen bytes of
+			// its key are the full prefix.
+			prefix = n.Minimum().key[depth:]
 		}
 	}
 
